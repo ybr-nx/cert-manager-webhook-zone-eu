@@ -1,0 +1,5 @@
+{
+  "secretName": "zone-eu-secret",
+  "zoneName": "fedora.ee",
+  "apiUrl" : "https://api.zone.eu/v2"
+}

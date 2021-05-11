@@ -1,16 +1,17 @@
 package main
 
 import (
+	"math/rand"
 	"os"
+	"time"
 	"testing"
 
 	"github.com/jetstack/cert-manager/test/acme/dns"
-
-	"github.com/cert-manager/webhook-example/example"
 )
 
 var (
 	zone = os.Getenv("TEST_ZONE_NAME")
+	fqdn string
 )
 
 func TestRunsSuite(t *testing.T) {
@@ -19,22 +20,31 @@ func TestRunsSuite(t *testing.T) {
 	// ChallengeRequest passed as part of the test cases.
 	//
 
-	// Uncomment the below fixture when implementing your custom DNS provider
-	//fixture := dns.NewFixture(&customDNSProviderSolver{},
-	//	dns.SetResolvedZone(zone),
-	//	dns.SetAllowAmbientCredentials(false),
-	//	dns.SetManifestPath("testdata/my-custom-solver"),
-	//	dns.SetBinariesPath("_test/kubebuilder/bin"),
-	//)
+	fqdn = GetRandomString(5) + "." + zone
+	timeLimit, _ := time.ParseDuration("5m");
+	pollInterval, _ := time.ParseDuration("15s");
 
-	solver := example.New("59351")
-	fixture := dns.NewFixture(solver,
-		dns.SetResolvedZone("example.com."),
-		dns.SetManifestPath("testdata/my-custom-solver"),
+	fixture := dns.NewFixture(&zoneEuDNSProviderSolver{},
+		dns.SetResolvedZone(zone),
+		dns.SetResolvedFQDN(fqdn),
+		dns.SetAllowAmbientCredentials(false),
+		dns.SetManifestPath("testdata/zone-eu"),
 		dns.SetBinariesPath("_test/kubebuilder/bin"),
-		dns.SetDNSServer("127.0.0.1:59351"),
-		dns.SetUseAuthoritative(false),
+		dns.SetPropagationLimit(timeLimit),
+		dns.SetPollInterval(pollInterval),
 	)
 
 	fixture.RunConformance(t)
+}
+
+func GetRandomString(n int) string {
+	rand.Seed(time.Now().UnixNano())
+
+	letters := []rune("abcdefghijklmnopqrstuvwxyz")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
