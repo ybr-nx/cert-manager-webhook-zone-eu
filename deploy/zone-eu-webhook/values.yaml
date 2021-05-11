@@ -13,7 +13,7 @@ certManager:
   serviceAccountName: cert-manager
 
 image:
-  repository: mycompany/webhook-image
+  repository: zone-eu/webhook-image
   tag: latest
   pullPolicy: IfNotPresent
 
